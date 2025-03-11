@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "what-digital-task"
+version = "0.1.0"
+description = "Backend for What Digital Task"
+authors = ["Your Name"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^5.1.7"
+djangorestframework = "^3.15.2"
+django-cors-headers = "^4.7.0"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+flake8 = "^7.1.2"
+mypy = "^1.15.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

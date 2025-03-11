@@ -1,0 +1,42 @@
+# Python/Django
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.env
+.env
+env/
+venv/
+.venv/
+ENV/
+*.sqlite3
+db.sqlite3
+media/
+
+# Poetry
+dist/
+*.egg-info/
+poetry.lock
+
+# Node/Next.js
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+.env*.local
+.vercel
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Divio specific
+data/
+/data.tar.gz
+.divio/
+/static/
