@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: todo_backend_dev
+    environment:
+      - DEBUG=1
+      - ALLOWED_HOSTS=*
+      - DATABASE_URL=sqlite:///db.sqlite3
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    command: python manage.py runserver 0.0.0.0:8000
+
+  frontend:
+    build: ./frontend
+    container_name: todo_frontend_dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  static_volume: 
