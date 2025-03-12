@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend
+    container_name: todo_backend
+    environment:
+      - DEBUG=1
+      - ALLOWED_HOSTS=*
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///db.sqlite3}
+    volumes:
+      - static_volume:/app/staticfiles
+      - ./backend:/app
+    expose:
+      - 8000
+
+  frontend:
+    build: ./frontend
+    container_name: todo_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+
+volumes:
+  static_volume: 
