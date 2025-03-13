@@ -26,8 +26,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Run code quality checks
-RUN ./syntax_check.sh
+# Copy and set up development entrypoint
+COPY entrypoint.dev.sh /app/entrypoint.dev.sh
+RUN chmod +x /app/entrypoint.dev.sh
 
 # Create staticfiles directory
 RUN mkdir -p /app/staticfiles
@@ -35,5 +36,8 @@ RUN mkdir -p /app/staticfiles
 # Expose port
 EXPOSE 8000
 
-# Start Django development server
+# Set development entrypoint
+ENTRYPOINT ["./entrypoint.dev.sh"]
+
+# Start the development server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 

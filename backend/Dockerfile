@@ -44,6 +44,10 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 # Copy project files
 COPY . .
 
+# Copy and set up production entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Create staticfiles directory
 RUN mkdir -p /app/staticfiles
 
@@ -53,5 +57,8 @@ RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8000
 
-# Start Gunicorn
+# Set production entrypoint
+ENTRYPOINT ["./entrypoint.sh"]
+
+# Start the application with gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "core.wsgi:application"] 

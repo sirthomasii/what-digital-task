@@ -1,14 +1,15 @@
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: todo_backend
     environment:
-      - DEBUG=1
+      - DEBUG=0
       - ALLOWED_HOSTS=*
       - DATABASE_URL=${DATABASE_URL:-sqlite:///db.sqlite3}
     volumes:
       - static_volume:/app/staticfiles
-      - ./backend:/app
     expose:
       - 8000
 
@@ -21,9 +22,7 @@ services:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - static_volume:/app/static
     depends_on:
       - backend
 

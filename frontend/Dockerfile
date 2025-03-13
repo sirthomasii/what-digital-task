@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-slim as build
+FROM --platform=linux/amd64 node:20-slim as build
 
 # Set work directory
 WORKDIR /app
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with npm ci for faster, reliable installs
+RUN npm ci
 
 # Copy project files
 COPY . .
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-slim
+FROM --platform=linux/amd64 node:20-slim
 
 WORKDIR /app
 

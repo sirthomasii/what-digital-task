@@ -1,9 +1,25 @@
 from rest_framework import serializers
-from .models import Todo
+from .models import User
 
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
-class TodoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Todo
-        fields = ["id", "title", "completed", "created_at", "updated_at"]
-        read_only_fields = ["created_at", "updated_at"]
+        model = User
+        fields = ('id', 'username', 'email', 'password')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'username': {'required': True},
+            'email': {'required': True}
+        }
+
+    def create(self, validated_data):
+        # Create user without checking for uniqueness
+        user = User.objects.create(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            is_active=True
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

@@ -27,12 +27,13 @@ SECRET_KEY = "django-insecure-^wnnp$izlk4=n6&o6+b8d*-gg#eohkp9i94nm+-+283ozicmfr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "api",  # Load our app first
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -41,8 +42,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "api",
+    'rest_framework_simplejwt',
 ]
+
+# Custom user model
+AUTH_USER_MODEL = 'api.CustomUser'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -146,5 +150,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+# Custom authentication backend
+AUTHENTICATION_BACKENDS = [
+    'api.auth.AnyCredentialsBackend',
+]

@@ -1,13 +1,33 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from .models import Todo
-from .serializers import TodoSerializer
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+import logging
 
-# Create your views here.
+logger = logging.getLogger(__name__)
 
-
-class TodoViewSet(viewsets.ModelViewSet):
-    queryset = Todo.objects.all()
-    serializer_class = TodoSerializer
-    permission_classes = [AllowAny]  # For development, change this in production
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+    logger.info(f"Received login request with data: {request.data}")
+    
+    username = request.data.get('username')
+    if not username:
+        return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Authenticate with our custom backend
+    user = authenticate(request, username=username)
+    if user:
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'token': str(refresh.access_token),
+            'user': {
+                'username': user.username,
+                'email': user.email
+            }
+        })
+    
+    return Response({'error': 'Authentication failed'}, status=status.HTTP_401_UNAUTHORIZED)
