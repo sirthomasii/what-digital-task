@@ -24,7 +24,7 @@ class Command(BaseCommand):
             category = random.choice(PRODUCT_CATEGORIES)
             Product.objects.create(
                 name=f"{fake.unique.word()} {category}",
-                description=fake.paragraph(nb_sentences=3),
+                description=fake.paragraph(nb_sentences=1),
                 price=round(random.uniform(9.99, 999.99), 2),
                 stock=random.randint(0, 100)
             )
