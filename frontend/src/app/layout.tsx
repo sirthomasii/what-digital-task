@@ -5,6 +5,7 @@ import "./globals.css";
 import '@mantine/core/styles.css';
 import { MantineProvider, createTheme } from '@mantine/core';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { UserProvider } from '@/contexts/UserContext';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,9 @@ export default function RootLayout({
       <body>
         <MantineProvider theme={theme}>
           <AuthProvider>
-            {children}
+            <UserProvider>
+              {children}
+            </UserProvider>
           </AuthProvider>
         </MantineProvider>
       </body>

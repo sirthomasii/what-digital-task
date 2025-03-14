@@ -1,18 +1,25 @@
-import { Table, TextInput, Paper, Stack, Container, Button } from '@mantine/core';
+import { Table, TextInput, Paper, Stack, Container, Button, Group, Text } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { getToken, removeToken } from '../utils/auth';
+import { useUser } from '../contexts/UserContext';
 
 interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
+  price: string | number;
   stock: number;
 }
 
 export function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const { user, setUser } = useUser();
+
+  const formatPrice = (price: string | number): string => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return !isNaN(numPrice) ? `$${numPrice.toFixed(2)}` : '$0.00';
+  };
 
   useEffect(() => {
     const token = getToken();
@@ -39,6 +46,7 @@ export function ProductTable() {
 
   const handleLogout = () => {
     removeToken();
+    setUser(null);
     window.location.reload();
   };
 
@@ -50,16 +58,24 @@ export function ProductTable() {
     <Container fluid p={0} h="100vh">
       <Stack h="100%" gap={0}>
         <Paper p="md" withBorder>
-          <Stack gap="sm">
+          <Group justify="space-between" align="center">
             <TextInput
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ flex: 1 }}
             />
-            <Button onClick={handleLogout} color="red" variant="light">
-              Logout
-            </Button>
-          </Stack>
+            <Group gap="md">
+              {user && (
+                <Text size="sm" c="dimmed">
+                  {user.email}
+                </Text>
+              )}
+              <Button onClick={handleLogout} color="red" variant="light">
+                Logout
+              </Button>
+            </Group>
+          </Group>
         </Paper>
         <Paper 
           style={{ 
@@ -80,10 +96,10 @@ export function ProductTable() {
             <Table.Tbody>
               {filteredProducts.map((product) => (
                 <Table.Tr key={product.id}>
-                    <Table.Td>{product.name}</Table.Td>
-                    <Table.Td>{product.description}</Table.Td>
-                    <Table.Td>{product.price}</Table.Td>
-                    <Table.Td>{product.stock}</Table.Td>
+                  <Table.Td>{product.name}</Table.Td>
+                  <Table.Td>{product.description}</Table.Td>
+                  <Table.Td>{formatPrice(product.price)}</Table.Td>
+                  <Table.Td>{product.stock}</Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

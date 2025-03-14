@@ -1,8 +1,9 @@
 import { Paper, Stack, TextInput, Button, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ProductTable } from './ProductTable';
-import { setToken, isValidToken } from '../utils/auth';
+import { setToken, isValidToken, getUser } from '../utils/auth';
+import { useUser } from '../contexts/UserContext';
 
 interface LoginForm {
   username: string;
@@ -12,15 +13,23 @@ interface LoginForm {
 export function LoginContainer() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { setUser } = useUser();
+
+  const checkToken = useCallback(async () => {
+    const valid = await isValidToken();
+    if (valid) {
+      const userData = getUser();
+      if (userData) {
+        setUser(userData);
+      }
+    }
+    setIsLoggedIn(valid);
+    setIsLoading(false);
+  }, [setUser]);
 
   useEffect(() => {
-    const checkToken = async () => {
-      const valid = await isValidToken();
-      setIsLoggedIn(valid);
-      setIsLoading(false);
-    };
     checkToken();
-  }, []);
+  }, [checkToken]);
 
   const form = useForm<LoginForm>({
     initialValues: {
@@ -43,7 +52,12 @@ export function LoginContainer() {
         body: JSON.stringify(values),
       });
       const data = await response.json();
-      setToken(data.token);
+      const userData = {
+        username: data.username,
+        email: data.email
+      };
+      setToken(data.token, userData);
+      setUser(userData);
       setIsLoggedIn(true);
     } catch (error) {
       console.error('Login failed:', error);

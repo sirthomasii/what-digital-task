@@ -1,15 +1,33 @@
 // Using localStorage to persist token even after browser is closed
 
-export const setToken = (token: string) => {
+interface User {
+  username: string;
+  email: string;
+}
+
+export const setToken = (token: string, userData: User) => {
   localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(userData));
 };
 
 export const getToken = () => {
   return localStorage.getItem('token');
 };
 
+export const getUser = (): User | null => {
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch (error) {
+    console.error('Failed to parse user data:', error);
+    return null;
+  }
+};
+
 export const removeToken = () => {
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
 };
 
 export const isValidToken = async (): Promise<boolean> => {
