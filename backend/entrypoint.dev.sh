@@ -19,7 +19,7 @@ python manage.py migrate --noinput
 
 # Seed product data
 echo "Seeding product data..."
-python manage.py seed_products --count 20
+python manage.py seed_products --count 10
 
 # Start the main process
 exec "$@" 

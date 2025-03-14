@@ -1,5 +1,7 @@
 import { Paper, Stack, TextInput, Button, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useState } from 'react';
+import { ProductTable } from './ProductTable';
 
 interface LoginForm {
   username: string;
@@ -7,6 +9,7 @@ interface LoginForm {
 }
 
 export function LoginContainer() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const form = useForm<LoginForm>({
     initialValues: {
       username: '',
@@ -28,11 +31,17 @@ export function LoginContainer() {
         body: JSON.stringify(values),
       });
       const data = await response.json();
-      console.log('Login successful:', data);
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+      setIsLoggedIn(true);
     } catch (error) {
       console.error('Login failed:', error);
     }
   };
+
+  if (isLoggedIn) {
+    return <ProductTable />;
+  }
 
   return (
     <Paper

@@ -13,5 +13,9 @@ python manage.py showmigrations
 echo "Applying pending migrations..."
 python manage.py migrate --noinput
 
+# Seed products if table is empty
+echo "Seeding products..."
+python manage.py seed_products
+
 # Start the main process
 exec "$@" 
