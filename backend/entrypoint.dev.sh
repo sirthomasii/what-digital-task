@@ -17,5 +17,9 @@ python manage.py showmigrations
 echo "Applying migrations..."
 python manage.py migrate --noinput
 
+# Seed product data
+echo "Seeding product data..."
+python manage.py seed_products --count 20
+
 # Start the main process
 exec "$@" 
