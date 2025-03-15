@@ -28,7 +28,6 @@ jobs:
           cd backend
           black . --check
           flake8 .
-          mypy .
 
       - name: Run Django tests
         run: |

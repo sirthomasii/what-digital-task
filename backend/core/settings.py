@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-^wnnp$izlk4=n6&o6+b8d*-gg#eohkp9i94nm+-+283ozicmfr
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+ALLOWED_HOSTS = ["*"]  # Allow all hosts in development
 
 
 # Application definition
@@ -42,12 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',  # Add token blacklist support
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",  # Add token blacklist support
 ]
 
 # Custom user model
-AUTH_USER_MODEL = 'api.CustomUser'
+AUTH_USER_MODEL = "api.CustomUser"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -101,16 +101,19 @@ if "DATABASE_URL" in os.environ:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": ("django.contrib.auth.password_validation." "MinimumLengthValidator"),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator"),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator"),
     },
 ]
 
@@ -149,7 +152,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ],
@@ -157,5 +160,5 @@ REST_FRAMEWORK = {
 
 # Custom authentication backend
 AUTHENTICATION_BACKENDS = [
-    'api.auth.AnyCredentialsBackend',
+    "api.auth.AnyCredentialsBackend",
 ]
