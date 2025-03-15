@@ -1,5 +1,5 @@
-import { Table, TextInput, Paper, Stack, Container, Button, Group, Text } from '@mantine/core';
-import { useState, useEffect } from 'react';
+import { Table, TextInput, Paper, Stack, Container, Button, Group, Text, Skeleton } from '@mantine/core';
+import { useState, useEffect, useCallback } from 'react';
 import { getToken, removeToken } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
 
@@ -14,6 +14,7 @@ interface Product {
 export function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const { user, setUser } = useUser();
 
   const formatPrice = (price: string | number): string => {
@@ -21,28 +22,55 @@ export function ProductTable() {
     return !isNaN(numPrice) ? `$${numPrice.toFixed(2)}` : '$0.00';
   };
 
-  useEffect(() => {
+  const fetchProducts = useCallback(async (search?: string) => {
     const token = getToken();
-    fetch('http://localhost:8000/api/products/', {
-      method: 'GET',
-      mode: 'cors',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch products');
+    const url = new URL('http://localhost:8000/api/products/');
+    if (search) {
+      url.searchParams.append('search', search);
+    }
+
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-        return response.json();
-      })
-      .then(data => setProducts(data || []))
-      .catch(error => {
-        console.error('Error fetching products:', error);
-        setProducts([]);
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      const data = await response.json();
+      
+      // Ensure loading state shows for at least 500ms
+      await new Promise(resolve => setTimeout(resolve, 250));
+      
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Debounced search with loading state
+  useEffect(() => {
+    setIsLoading(true); // Set loading state when search changes
+    const timer = setTimeout(() => {
+      fetchProducts(searchQuery);
+    }, 1000); // Increased to 1 second
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, fetchProducts]);
 
   const handleLogout = () => {
     removeToken();
@@ -50,12 +78,29 @@ export function ProductTable() {
     window.location.reload();
   };
 
-  const filteredProducts = products?.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const LoadingRows = () => (
+    <>
+      {[...Array(15)].map((_, index) => (
+        <Table.Tr key={`skeleton-${index}`}>
+          <Table.Td style={{ width: '20%' }}>
+            <Skeleton height={20} radius="sm" animate />
+          </Table.Td>
+          <Table.Td style={{ width: '50%' }}>
+            <Skeleton height={20} radius="sm" animate />
+          </Table.Td>
+          <Table.Td style={{ width: '15%' }}>
+            <Skeleton height={20} radius="sm" animate />
+          </Table.Td>
+          <Table.Td style={{ width: '15%' }}>
+            <Skeleton height={20} radius="sm" animate />
+          </Table.Td>
+        </Table.Tr>
+      ))}
+    </>
+  );
 
   return (
-    <Container fluid p={0} h="100vh">
+    <Container size="md" p="md" h="100vh">
       <Stack h="100%" gap={0}>
         <Paper p="md" withBorder>
           <Group justify="space-between" align="center">
@@ -84,24 +129,28 @@ export function ProductTable() {
             borderRadius: 0
           }}
         >
-          <Table stickyHeader>
+          <Table stickyHeader horizontalSpacing="md" verticalSpacing="sm" layout="fixed" style={{ tableLayout: 'fixed', width: '100%' }}>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Description</Table.Th>
-                <Table.Th>Price</Table.Th>
-                <Table.Th>Stock</Table.Th>
+                <Table.Th style={{ width: '20%' }}>Name</Table.Th>
+                <Table.Th style={{ width: '50%' }}>Description</Table.Th>
+                <Table.Th style={{ width: '15%' }}>Price</Table.Th>
+                <Table.Th style={{ width: '15%' }}>Stock</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {filteredProducts.map((product) => (
-                <Table.Tr key={product.id}>
-                  <Table.Td>{product.name}</Table.Td>
-                  <Table.Td>{product.description}</Table.Td>
-                  <Table.Td>{formatPrice(product.price)}</Table.Td>
-                  <Table.Td>{product.stock}</Table.Td>
-                </Table.Tr>
-              ))}
+              {isLoading ? (
+                <LoadingRows />
+              ) : (
+                products.map((product) => (
+                  <Table.Tr key={product.id}>
+                    <Table.Td style={{ width: '20%' }}>{product.name}</Table.Td>
+                    <Table.Td style={{ width: '50%' }}>{product.description}</Table.Td>
+                    <Table.Td style={{ width: '15%' }}>{formatPrice(product.price)}</Table.Td>
+                    <Table.Td style={{ width: '15%' }}>{product.stock}</Table.Td>
+                  </Table.Tr>
+                ))
+              )}
             </Table.Tbody>
           </Table>
         </Paper>
