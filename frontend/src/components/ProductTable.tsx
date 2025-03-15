@@ -1,7 +1,8 @@
-import { Table, TextInput, Paper, Stack, Container, Button, Group, Text, Skeleton } from '@mantine/core';
+import { Table, TextInput, Paper, Stack, Container, Button, Group, Text, Skeleton, UnstyledButton, Center } from '@mantine/core';
 import { useState, useEffect, useCallback } from 'react';
 import { getToken, removeToken } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
+import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
 
 interface Product {
   id: number;
@@ -11,10 +12,36 @@ interface Product {
   stock: number;
 }
 
+interface ThProps {
+  children: React.ReactNode;
+  sortBy: keyof Product | null;
+  onSort: (field: keyof Product) => void;
+  reversed: boolean;
+  width: string;
+}
+
+function Th({ children, sortBy, onSort, reversed, width }: ThProps) {
+  const field = children?.toString().toLowerCase() as keyof Product;
+  const Icon = sortBy === field ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
+
+  return (
+    <Table.Th style={{ width }}>
+      <UnstyledButton onClick={() => onSort(field)} style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%' }}>
+        <span style={{ flex: 1 }}>{children}</span>
+        <Center>
+          <Icon size={14} stroke={1.5} />
+        </Center>
+      </UnstyledButton>
+    </Table.Th>
+  );
+}
+
 export function ProductTable() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<keyof Product>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const { user, setUser } = useUser();
 
   const formatPrice = (price: string | number): string => {
@@ -28,6 +55,8 @@ export function ProductTable() {
     if (search) {
       url.searchParams.append('search', search);
     }
+    url.searchParams.append('sort_by', sortBy);
+    url.searchParams.append('sort_order', sortOrder);
 
     try {
       const response = await fetch(url.toString(), {
@@ -45,7 +74,6 @@ export function ProductTable() {
       
       const data = await response.json();
       
-      // Ensure loading state shows for at least 500ms
       await new Promise(resolve => setTimeout(resolve, 250));
       
       setProducts(data || []);
@@ -55,7 +83,7 @@ export function ProductTable() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sortBy, sortOrder]);
 
   // Initial fetch
   useEffect(() => {
@@ -64,13 +92,19 @@ export function ProductTable() {
 
   // Debounced search with loading state
   useEffect(() => {
-    setIsLoading(true); // Set loading state when search changes
+    setIsLoading(true);
     const timer = setTimeout(() => {
       fetchProducts(searchQuery);
-    }, 1000); // Increased to 1 second
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [searchQuery, fetchProducts]);
+
+  const handleSort = (field: keyof Product) => {
+    const isAsc = sortBy === field && sortOrder === 'asc';
+    setSortOrder(isAsc ? 'desc' : 'asc');
+    setSortBy(field);
+  };
 
   const handleLogout = () => {
     removeToken();
@@ -132,10 +166,10 @@ export function ProductTable() {
           <Table stickyHeader horizontalSpacing="md" verticalSpacing="sm" layout="fixed" style={{ tableLayout: 'fixed', width: '100%' }}>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th style={{ width: '20%' }}>Name</Table.Th>
-                <Table.Th style={{ width: '50%' }}>Description</Table.Th>
-                <Table.Th style={{ width: '15%' }}>Price</Table.Th>
-                <Table.Th style={{ width: '15%' }}>Stock</Table.Th>
+                <Th sortBy={sortBy} onSort={handleSort} reversed={sortOrder === 'desc'} width="20%">Name</Th>
+                <Th sortBy={sortBy} onSort={handleSort} reversed={sortOrder === 'desc'} width="50%">Description</Th>
+                <Th sortBy={sortBy} onSort={handleSort} reversed={sortOrder === 'desc'} width="15%">Price</Th>
+                <Th sortBy={sortBy} onSort={handleSort} reversed={sortOrder === 'desc'} width="15%">Stock</Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>

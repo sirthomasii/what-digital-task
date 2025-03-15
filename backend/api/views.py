@@ -18,15 +18,27 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProductSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+    ordering_fields = ['name', 'description', 'price', 'stock']
+    ordering = ['name']  # default sorting
 
     def get_queryset(self):
         queryset = Product.objects.all()
         search = self.request.query_params.get('search', None)
+        sort_by = self.request.query_params.get('sort_by', 'name')
+        sort_order = self.request.query_params.get('sort_order', 'asc')
+
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search) |
                 Q(description__icontains=search)
             )
+        
+        # Handle sorting
+        if sort_by in self.ordering_fields:
+            if sort_order == 'desc':
+                sort_by = f'-{sort_by}'
+            queryset = queryset.order_by(sort_by)
+
         return queryset
 
 @api_view(['POST'])

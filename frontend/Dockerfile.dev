@@ -1,0 +1,17 @@
+# Development image
+FROM --platform=linux/amd64 node:20-slim
+
+# Set work directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies (including devDependencies)
+RUN npm install
+
+# Expose port
+EXPOSE 3000
+
+# Start the development server with hot reloading
+CMD ["npm", "run", "dev"] 
