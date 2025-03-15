@@ -97,8 +97,6 @@ export function ProductTable() {
 
     const url = new URL('http://localhost:8000/api/products/');
     url.searchParams.append('search', search);
-    url.searchParams.append('sort_by', sortBy);
-    url.searchParams.append('sort_order', sortOrder);
 
     try {
       const response = await fetch(url.toString(), {
@@ -116,7 +114,10 @@ export function ProductTable() {
       
       const data = await response.json();
       await new Promise(resolve => setTimeout(resolve, 250));
-      setProducts(data || []);
+      
+      // Sort the data before setting it
+      const sortedData = sortProducts(data, sortBy, sortOrder);
+      setProducts(sortedData);
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
@@ -129,8 +130,36 @@ export function ProductTable() {
     }
   }, [sortBy, sortOrder, setUser]);
 
-  // Remove initial fetch effect since we only want to fetch on search
-  
+  // Helper function to sort products
+  const sortProducts = (products: Product[], field: keyof Product, order: 'asc' | 'desc') => {
+    return [...products].sort((a, b) => {
+      let aValue = a[field];
+      let bValue = b[field];
+
+      // Handle special cases for price
+      if (field === 'price') {
+        aValue = typeof aValue === 'string' ? parseFloat(aValue) : aValue;
+        bValue = typeof bValue === 'string' ? parseFloat(bValue) : bValue;
+      }
+
+      // Handle string comparison
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return order === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // Handle number comparison
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return order === 'asc' 
+          ? aValue - bValue 
+          : bValue - aValue;
+      }
+
+      return 0;
+    });
+  };
+
   // Debounced search
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -139,27 +168,57 @@ export function ProductTable() {
       return;
     }
 
-    setIsLoading(true);
+    // Only show loading state for search operations
+    if (!products.length) {
+      setIsLoading(true);
+    }
+
     const timer = setTimeout(() => {
       fetchProducts(searchQuery);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, fetchProducts]);
+  }, [searchQuery, fetchProducts, products.length]);
 
   const handleSort = (field: keyof Product) => {
     const isAsc = sortBy === field && sortOrder === 'asc';
     const newSortOrder = isAsc ? 'desc' : 'asc';
     setSortOrder(newSortOrder);
     setSortBy(field);
+    
+    // Sort the existing products without fetching
+    setProducts(prevProducts => sortProducts(prevProducts, field, newSortOrder));
   };
 
-  const handleLogout = () => {
-    // Clear localStorage on logout
-    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
-    removeToken();
-    setUser(null);
-    window.location.reload();
+  const handleLogout = async () => {
+    const token = getToken();
+    
+    try {
+      // Call backend logout endpoint
+      await fetch('http://localhost:8000/api/logout/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Clear all storage
+      Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+      sessionStorage.clear();
+      
+      // Clear authentication
+      removeToken();
+      
+      // Clear application state
+      setProducts([]);
+      setUser(null);
+      
+      // Redirect to login
+      window.location.href = '/';
+    }
   };
 
   const handleSelect = async (productId: number) => {
@@ -273,11 +332,11 @@ export function ProductTable() {
                     <Table.Td style={{ width: '15%' }}>{formatPrice(product.price)}</Table.Td>
                     <Table.Td style={{ width: '15%' }}>{product.stock}</Table.Td>
                     <Table.Td style={{ width: '10%' }}>
-                      {product.selected_by_username ? (
-                        <Text size="sm" c={product.is_selected ? "blue" : "red"}>
-                          {product.is_selected ? "Selected" : `By ${product.selected_by_username}`}
+                      {product.is_selected && (
+                        <Text size="sm" c="blue">
+                          Selected
                         </Text>
-                      ) : null}
+                      )}
                     </Table.Td>
                   </Table.Tr>
                 ))

@@ -25,19 +25,17 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     is_selected = serializers.SerializerMethodField()
-    selected_by_username = serializers.SerializerMethodField()
+    selected_by_usernames = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'price', 'stock', 'is_selected', 'selected_by_username')
+        fields = ('id', 'name', 'description', 'price', 'stock', 'is_selected', 'selected_by_usernames')
 
     def get_is_selected(self, obj):
         request = self.context.get('request')
-        if request and obj.selected_by:
-            return obj.selected_by == request.user
+        if request and request.user:
+            return request.user in obj.selected_by.all()
         return False
 
-    def get_selected_by_username(self, obj):
-        if obj.selected_by:
-            return obj.selected_by.username
-        return None
+    def get_selected_by_usernames(self, obj):
+        return [user.username for user in obj.selected_by.all()]
