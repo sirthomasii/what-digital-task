@@ -10,6 +10,10 @@ COPY package*.json ./
 # Install dependencies (including devDependencies)
 RUN npm install
 
+# Set environment variables for development
+ENV NEXT_PUBLIC_API_URL=http://localhost:8000/api
+ENV NEXT_TELEMETRY_DISABLED=1
+
 # Expose port
 EXPOSE 3000
 

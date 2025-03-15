@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ProductTable } from './ProductTable';
 import { setToken, isValidToken, getUser } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
+import { getApiUrl } from '@/utils/config';
 
 interface LoginForm {
   username: string;
@@ -44,7 +45,7 @@ export function LoginContainer() {
 
   const handleSubmit = async (values: LoginForm) => {
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
+      const response = await fetch(getApiUrl('login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

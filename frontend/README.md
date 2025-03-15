@@ -20,6 +20,23 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+The application uses the following environment variables:
+
+- `NEXT_PUBLIC_API_URL`: The base URL for the API. Defaults to `http://localhost:8000/api` in development.
+
+You can set these variables in a `.env.local` file in the root of the project:
+
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
+
+In production, this variable is set in the Dockerfile or by the hosting environment.
+
+> **Note:** When working with the Django backend, all API endpoints must include trailing slashes. The `getApiUrl` helper function in `src/utils/config.ts` automatically adds these trailing slashes to ensure compatibility with Django's URL routing.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

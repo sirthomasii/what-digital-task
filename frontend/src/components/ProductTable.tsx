@@ -1,8 +1,9 @@
 import { Table, TextInput, Paper, Stack, Container, Button, Group, Text, Skeleton, UnstyledButton, Center } from '@mantine/core';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getToken, removeToken } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
-import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
+import { IconChevronUp, IconChevronDown, IconSelector, IconLogout } from '@tabler/icons-react';
+import { getApiUrl, API_BASE_URL } from '@/utils/config';
 
 interface Product {
   id: number;
@@ -106,7 +107,8 @@ export function ProductTable() {
       return;
     }
 
-    const url = new URL('http://localhost:8000/api/products/');
+    // Ensure the URL has a trailing slash for Django compatibility
+    const url = new URL(`${API_BASE_URL}/products/`);
     url.searchParams.append('search', search);
 
     try {
@@ -208,7 +210,7 @@ export function ProductTable() {
     
     try {
       // Call backend logout endpoint
-      await fetch('http://localhost:8000/api/logout/', {
+      await fetch(getApiUrl('logout'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -238,7 +240,7 @@ export function ProductTable() {
     const token = getToken();
     
     try {
-      const response = await fetch(`http://localhost:8000/api/products/${productId}/select/`, {
+      const response = await fetch(getApiUrl(`products/${productId}/select`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

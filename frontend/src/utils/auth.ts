@@ -1,4 +1,5 @@
 // Using localStorage to persist token even after browser is closed
+import { getApiUrl } from './config';
 
 interface User {
   username: string;
@@ -36,7 +37,7 @@ export const isValidToken = async (): Promise<boolean> => {
 
   try {
     // Validate token by making a request to products endpoint
-    const response = await fetch('http://localhost:8000/api/products/', {
+    const response = await fetch(getApiUrl('products'), {
       method: 'GET',
       mode: 'cors',
       headers: {
