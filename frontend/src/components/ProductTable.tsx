@@ -1,8 +1,8 @@
 import { Table, TextInput, Paper, Stack, Container, Button, Group, Text, Skeleton, UnstyledButton, Center } from '@mantine/core';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getToken, removeToken } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
-import { IconChevronUp, IconChevronDown, IconSelector, IconLogout } from '@tabler/icons-react';
+import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
 import { getApiUrl, API_BASE_URL } from '@/utils/config';
 
 interface Product {
@@ -118,11 +118,31 @@ export function ProductTable() {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        // Add credentials to ensure cookies are sent
+        credentials: 'include'
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch products');
+        // Log detailed error information
+        console.error('Failed to fetch products:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        });
+        
+        // Try to get the response text for more details
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        
+        // Handle 401 Unauthorized specifically
+        if (response.status === 401) {
+          removeToken();
+          setUser(null);
+          throw new Error('401 Unauthorized: Session expired');
+        }
+        
+        throw new Error(`Failed to fetch products: ${response.status}`);
       }
       
       const data = await response.json();
@@ -133,7 +153,10 @@ export function ProductTable() {
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
-      if (error instanceof Error && error.message.includes('401')) {
+      
+      // Check if the error is an instance of Error and contains 401
+      if (error instanceof Error && 
+          (error.message.includes('401') || error.message.includes('Unauthorized'))) {
         removeToken();
         setUser(null);
       }
@@ -210,16 +233,27 @@ export function ProductTable() {
     
     try {
       // Call backend logout endpoint
-      await fetch(getApiUrl('logout'), {
+      const response = await fetch(getApiUrl('logout'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        // Add credentials to ensure cookies are sent
+        credentials: 'include'
       });
+      
+      // Log any non-OK responses but continue with logout
+      if (!response.ok) {
+        console.warn('Logout request failed:', {
+          status: response.status,
+          statusText: response.statusText
+        });
+      }
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
+      // Always clear storage and state regardless of server response
       // Clear all storage
       Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
       sessionStorage.clear();
@@ -245,12 +279,31 @@ export function ProductTable() {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        // Add credentials to ensure cookies are sent
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to select product');
+        // Log detailed error information
+        console.error('Failed to select product:', {
+          status: response.status,
+          statusText: response.statusText,
+          productId
+        });
+        
+        // Try to get the response text for more details
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        
+        // Try to parse as JSON if possible
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.error || `Failed to select product: ${response.status}`);
+        } catch {
+          // If parsing fails, use the status text
+          throw new Error(`Failed to select product: ${response.status} ${response.statusText}`);
+        }
       }
 
       // Update the product locally
@@ -262,6 +315,14 @@ export function ProductTable() {
       );
     } catch (error) {
       console.error('Error selecting product:', error);
+      
+      // Handle 401 Unauthorized
+      if (error instanceof Error && 
+          (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+        removeToken();
+        setUser(null);
+        window.location.href = '/';
+      }
     }
   };
 

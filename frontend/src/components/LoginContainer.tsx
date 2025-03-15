@@ -1,10 +1,11 @@
-import { Paper, Stack, TextInput, Button, Title } from '@mantine/core';
+import { Paper, Stack, TextInput, Button, Title, Text, Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useState, useEffect, useCallback } from 'react';
 import { ProductTable } from './ProductTable';
 import { setToken, isValidToken, getUser } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
 import { getApiUrl } from '@/utils/config';
+import { IconAlertCircle } from '@tabler/icons-react';
 
 interface LoginForm {
   username: string;
@@ -14,6 +15,8 @@ interface LoginForm {
 export function LoginContainer() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser } = useUser();
 
   const checkToken = useCallback(async () => {
@@ -44,24 +47,68 @@ export function LoginContainer() {
   });
 
   const handleSubmit = async (values: LoginForm) => {
+    setLoginError(null);
+    setIsSubmitting(true);
+    
     try {
-      const response = await fetch(getApiUrl('login'), {
+      const apiUrl = getApiUrl('login');
+      console.log('Login request to:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
+        // Add credentials to ensure cookies are sent
+        credentials: 'include'
       });
+      
+      if (!response.ok) {
+        console.error('Login request failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        });
+        
+        let errorMessage = `Login failed with status ${response.status}. Please try again.`;
+        
+        try {
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          
+          if (response.status === 502) {
+            errorMessage = 'Backend server is unavailable. Please try again later or contact support.';
+          }
+        } catch (e) {
+          console.error('Could not read error response:', e);
+        }
+        
+        setLoginError(errorMessage);
+        return;
+      }
+      
       const data = await response.json();
+      
+      if (!data.token || !data.username || !data.email) {
+        console.error('Invalid login response:', data);
+        setLoginError('Invalid response from server. Please try again.');
+        return;
+      }
+      
       const userData = {
         username: data.username,
         email: data.email
       };
+      
       setToken(data.token, userData);
       setUser(userData);
       setIsLoggedIn(true);
     } catch (error) {
       console.error('Login failed:', error);
+      setLoginError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,6 +133,18 @@ export function LoginContainer() {
         <Title order={2} ta="center" c="#1a1b1e" fz={24} m={0}>
           Login
         </Title>
+        
+        {loginError && (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            title="Login Error" 
+            color="red" 
+            variant="filled"
+          >
+            {loginError}
+          </Alert>
+        )}
+        
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap={15}>
             <TextInput
@@ -96,6 +155,7 @@ export function LoginContainer() {
                 input: { padding: '12px', fontSize: '14px' }
               }}
               {...form.getInputProps('username')}
+              disabled={isSubmitting}
             />
             <TextInput
               label="Email"
@@ -105,6 +165,7 @@ export function LoginContainer() {
                 input: { padding: '12px', fontSize: '14px' }
               }}
               {...form.getInputProps('email')}
+              disabled={isSubmitting}
             />
             <Button 
               type="submit" 
@@ -112,11 +173,16 @@ export function LoginContainer() {
               h={42}
               mt={10}
               fz={14}
+              loading={isSubmitting}
             >
-              Login
+              {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
           </Stack>
         </form>
+        
+        <Text size="xs" ta="center" c="dimmed" mt={10}>
+          For testing, use any username (min 2 chars) and valid email format
+        </Text>
       </Stack>
     </Paper>
   );

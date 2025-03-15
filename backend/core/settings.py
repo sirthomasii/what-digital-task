@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from .logging_settings import LOGGING  # Import logging settings
+
+# Configure Django logging with the imported LOGGING settings
+# This is used by Django's logging system automatically when imported with this name
+# See https://docs.djangoproject.com/en/5.1/topics/logging/ for details
+LOGGING = LOGGING  # Explicitly reference LOGGING to satisfy linter
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -144,6 +150,34 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React frontend
+    "http://localhost:8080",  # Health check server
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8080",
+]
+
+# Allow all origins in development
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+
+# Additional CORS settings
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 # REST Framework settings

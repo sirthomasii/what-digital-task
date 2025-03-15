@@ -103,8 +103,10 @@ COPY backend/ /app/backend/
 # Copy static frontend files from frontend builder
 COPY --from=frontend-builder /app/frontend/static/ /app/frontend/static/
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && \
+    chmod 777 /app/logs && \
+    chown -R www-data:www-data /app/logs
 
 # Create staticfiles directory
 RUN mkdir -p /app/backend/staticfiles
@@ -116,6 +118,10 @@ set -e\n\
 # Ensure migrations directory exists\n\
 mkdir -p /app/backend/api/migrations\n\
 touch /app/backend/api/migrations/__init__.py\n\
+\n\
+# Ensure logs directory exists and is writable\n\
+mkdir -p /app/logs\n\
+chmod 777 /app/logs\n\
 \n\
 # Show current migration status\n\
 cd /app/backend\n\
@@ -136,33 +142,33 @@ LOGGING = {\n\
     \"version\": 1,\n\
     \"disable_existing_loggers\": False,\n\
     \"formatters\": {\n\
-        \"verbose\": {\n\
-            \"format\": \"{levelname} {asctime} {module} {process:d} {thread:d} {message}\",\n\
+        \"simple\": {\n\
+            \"format\": \"[{levelname}] {message}\",\n\
             \"style\": \"{\",\n\
         },\n\
     },\n\
     \"handlers\": {\n\
         \"console\": {\n\
-            \"level\": \"DEBUG\",\n\
+            \"level\": \"INFO\",\n\
             \"class\": \"logging.StreamHandler\",\n\
-            \"formatter\": \"verbose\",\n\
+            \"formatter\": \"simple\",\n\
         },\n\
         \"file\": {\n\
-            \"level\": \"DEBUG\",\n\
+            \"level\": \"WARNING\",\n\
             \"class\": \"logging.FileHandler\",\n\
             \"filename\": \"/app/logs/django.log\",\n\
-            \"formatter\": \"verbose\",\n\
+            \"formatter\": \"simple\",\n\
         },\n\
     },\n\
     \"loggers\": {\n\
         \"django\": {\n\
             \"handlers\": [\"console\", \"file\"],\n\
-            \"level\": \"DEBUG\",\n\
-            \"propagate\": True,\n\
+            \"level\": \"INFO\",\n\
+            \"propagate\": False,\n\
         },\n\
         \"django.db.backends\": {\n\
-            \"handlers\": [\"console\", \"file\"],\n\
-            \"level\": \"DEBUG\",\n\
+            \"handlers\": [\"file\"],\n\
+            \"level\": \"WARNING\",\n\
             \"propagate\": False,\n\
         },\n\
     },\n\
@@ -170,7 +176,9 @@ LOGGING = {\n\
 \n\
 # Add logging settings import to settings.py\n\
 if ! grep -q "from .logging_settings import LOGGING" /app/backend/core/settings.py; then\n\
-    echo "\\n# Import logging settings\\nfrom .logging_settings import LOGGING" >> /app/backend/core/settings.py\n\
+    echo \"\" >> /app/backend/core/settings.py\n\
+    echo \"# Import logging settings\" >> /app/backend/core/settings.py\n\
+    echo \"from .logging_settings import LOGGING\" >> /app/backend/core/settings.py\n\
 fi\n\
 ' > /app/backend/entrypoint.sh
 
@@ -281,7 +289,7 @@ echo "Running backend entrypoint..."\n\
 cd /app/backend\n\
 bash ./entrypoint.sh\n\
 \n\
-# Start backend with gunicorn with detailed logging\n\
+# Start backend with gunicorn with minimal logging\n\
 echo "Starting Django backend..."\n\
 cd /app/backend\n\
 gunicorn core.wsgi:application \
@@ -289,7 +297,7 @@ gunicorn core.wsgi:application \
   --workers 2 \
   --threads 2 \
   --worker-class=gthread \
-  --log-level=debug \
+  --log-level=warning \
   --log-file=/app/logs/gunicorn.log \
   --access-logfile=/app/logs/access.log \
   --error-logfile=/app/logs/error.log \
