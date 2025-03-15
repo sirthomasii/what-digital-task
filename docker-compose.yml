@@ -3,7 +3,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    container_name: todo_backend
+    container_name: what_app_backend
     environment:
       - DEBUG=0
       - ALLOWED_HOSTS=*
@@ -15,7 +15,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: todo_frontend
+    container_name: what_app_frontend
     ports:
       - "3000:3000"
     environment:
