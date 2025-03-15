@@ -297,7 +297,7 @@ gunicorn core.wsgi:application \
   --workers 2 \
   --threads 2 \
   --worker-class=gthread \
-  --log-level=warning \
+  --log-level=info \
   --log-file=/app/logs/gunicorn.log \
   --access-logfile=/app/logs/access.log \
   --error-logfile=/app/logs/error.log \

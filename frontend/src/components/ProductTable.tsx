@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getToken, removeToken } from '../utils/auth';
 import { useUser } from '../contexts/UserContext';
 import { IconChevronUp, IconChevronDown, IconSelector } from '@tabler/icons-react';
-import { getApiUrl, API_BASE_URL } from '@/utils/config';
+import { getApiUrl } from '@/utils/config';
 
 interface Product {
   id: number;
@@ -107,12 +107,35 @@ export function ProductTable() {
       return;
     }
 
-    // Ensure the URL has a trailing slash for Django compatibility
-    const url = new URL(`${API_BASE_URL}/products/`);
-    url.searchParams.append('search', search);
+    // Get the API URL for products
+    const apiUrl = getApiUrl('products/');
+    
+    // Check if the URL is absolute or relative
+    const isAbsoluteUrl = apiUrl.startsWith('http://') || apiUrl.startsWith('https://');
+    
+    // Create the final URL with search parameter
+    let finalUrl: string;
+    
+    if (isAbsoluteUrl) {
+      // For absolute URLs, use URL constructor
+      try {
+        const url = new URL(apiUrl);
+        url.searchParams.append('search', search);
+        finalUrl = url.toString();
+      } catch (error) {
+        console.error('Error creating URL object:', error);
+        // Fallback to manual query string construction
+        finalUrl = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}search=${encodeURIComponent(search)}`;
+      }
+    } else {
+      // For relative URLs, manually construct the query string
+      finalUrl = `${apiUrl}${apiUrl.includes('?') ? '&' : '?'}search=${encodeURIComponent(search)}`;
+    }
+    
+    console.log('Validating token with request to:', finalUrl);
 
     try {
-      const response = await fetch(url.toString(), {
+      const response = await fetch(finalUrl, {
         method: 'GET',
         mode: 'cors',
         headers: {
@@ -233,7 +256,10 @@ export function ProductTable() {
     
     try {
       // Call backend logout endpoint
-      const response = await fetch(getApiUrl('logout'), {
+      const logoutUrl = getApiUrl('logout');
+      console.log('Logout request to:', logoutUrl);
+      
+      const response = await fetch(logoutUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -274,7 +300,10 @@ export function ProductTable() {
     const token = getToken();
     
     try {
-      const response = await fetch(getApiUrl(`products/${productId}/select`), {
+      const selectUrl = getApiUrl(`products/${productId}/select`);
+      console.log('Select product request to:', selectUrl);
+      
+      const response = await fetch(selectUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

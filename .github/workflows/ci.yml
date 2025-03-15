@@ -78,8 +78,3 @@ jobs:
         run: |
           echo "Deploying to Divio test environment..."
           divio project deploy test --remote-id ${{ secrets.DIVIO_APP_UUID }}
-          
-      - name: Check deployment status
-        run: |
-          echo "Checking deployment status..."
-          divio project status --remote-id ${{ secrets.DIVIO_APP_UUID }} 
