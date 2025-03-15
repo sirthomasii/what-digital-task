@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import status, viewsets, filters
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -40,6 +40,27 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.order_by(sort_by)
 
         return queryset
+
+    @action(detail=True, methods=['post'])
+    def select(self, request, pk=None):
+        product = self.get_object()
+        user = request.user
+        
+        # If product is already selected by someone else
+        if product.selected_by and product.selected_by != user:
+            return Response(
+                {'error': 'Product already selected by another user'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Toggle selection
+        if product.selected_by == user:
+            product.selected_by = None
+        else:
+            product.selected_by = user
+        
+        product.save()
+        return Response(self.get_serializer(product).data)
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
