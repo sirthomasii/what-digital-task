@@ -56,6 +56,7 @@ export function ProductTable() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => 
     (localStorage.getItem(STORAGE_KEYS.SORT_ORDER) as 'asc' | 'desc') || 'asc'
   );
+  const [isSearching, setIsSearching] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(() => {
     // Only show loading if we have a saved search
@@ -66,6 +67,14 @@ export function ProductTable() {
   // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SEARCH_QUERY, searchQuery);
+    
+    // Set searching state when query changes
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+      setIsLoading(false);
+    }
   }, [searchQuery]);
 
   useEffect(() => {
@@ -86,12 +95,14 @@ export function ProductTable() {
     if (!search?.trim()) {
       setIsLoading(false);
       setProducts([]);
+      setIsSearching(false);
       return;
     }
 
     const token = getToken();
     if (!token) {
       setIsLoading(false);
+      setIsSearching(false);
       return;
     }
 
@@ -115,9 +126,8 @@ export function ProductTable() {
       const data = await response.json();
       await new Promise(resolve => setTimeout(resolve, 250));
       
-      // Sort the data before setting it
-      const sortedData = sortProducts(data, sortBy, sortOrder);
-      setProducts(sortedData);
+      setProducts(data);
+      setIsSearching(false);
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
@@ -128,7 +138,14 @@ export function ProductTable() {
     } finally {
       setIsLoading(false);
     }
-  }, [sortBy, sortOrder, setUser]);
+  }, [setUser]);
+
+  // Effect to handle sorting whenever products, sortBy, or sortOrder changes
+  useEffect(() => {
+    if (products.length > 0) {
+      setProducts(prevProducts => sortProducts(prevProducts, sortBy, sortOrder));
+    }
+  }, [sortBy, sortOrder, products.length]);
 
   // Helper function to sort products
   const sortProducts = (products: Product[], field: keyof Product, order: 'asc' | 'desc') => {
@@ -168,17 +185,13 @@ export function ProductTable() {
       return;
     }
 
-    // Only show loading state for search operations
-    if (!products.length) {
-      setIsLoading(true);
-    }
-
+    setIsLoading(true);
     const timer = setTimeout(() => {
       fetchProducts(searchQuery);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, fetchProducts, products.length]);
+  }, [searchQuery, fetchProducts]);
 
   const handleSort = (field: keyof Product) => {
     const isAsc = sortBy === field && sortOrder === 'asc';
@@ -323,7 +336,9 @@ export function ProductTable() {
                     key={product.id}
                     style={{ 
                       cursor: 'pointer',
-                      backgroundColor: product.is_selected ? '#e6f7ff' : undefined
+                      backgroundColor: product.is_selected ? '#e6f7ff' : undefined,
+                      opacity: isSearching ? 0.5 : 1,
+                      transition: 'opacity 0.2s ease-in-out'
                     }}
                     onClick={() => handleSelect(product.id)}
                   >
