@@ -63,7 +63,7 @@ export function ProductTable() {
     // Only show loading if we have a saved search
     return !!localStorage.getItem(STORAGE_KEYS.SEARCH_QUERY);
   });
-  const { user, setUser } = useUser();
+  const { setUser } = useUser();
 
   // Save state to localStorage whenever it changes
   useEffect(() => {

@@ -29,17 +29,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body style={{ margin: 0, padding: 0, height: '100vh', overflow: 'hidden' }}>
+      <body>
         <MantineProvider theme={theme}>
           <AuthProvider>
             <UserProvider>
               <AppShell
                 header={{ height: 60 }}
                 padding="md"
-                style={{ height: '100vh' }}
               >
                 <Header />
-                <AppShell.Main style={{ height: 'calc(100vh - 60px)' }}>
+                <AppShell.Main>
                   {children}
                 </AppShell.Main>
               </AppShell>

@@ -5,9 +5,9 @@ export function Header() {
   const { user } = useUser();
 
   return (
-    <AppShell.Header style={{ borderBottom: '1px solid #e9ecef' }}>
+    <AppShell.Header>
       <Container size="xl" h="100%" py="sm">
-        <Group justify="space-between" h="100%" px="md">
+        <Group justify="space-between" h="100%">
           <Text size="lg" fw={700}>What Digital Task</Text>
           {user && (
             <Box>
