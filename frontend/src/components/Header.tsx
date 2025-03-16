@@ -1,13 +1,13 @@
-import { AppShell, Container, Group, Text, Box } from '@mantine/core';
+import { Container, Group, Text, Box } from '@mantine/core';
 import { useUser } from '../contexts/UserContext';
 
 export function Header() {
   const { user } = useUser();
 
   return (
-    <AppShell.Header>
-      <Container size="xl" h="100%" py="sm">
-        <Group justify="space-between" h="100%">
+    <Box component="header" style={{ borderBottom: '1px solid rgb(201, 201, 201)' }}>
+      <Container size="xl" h="5vh" py="sm">
+        <Group justify="space-between" mt="-1.5vh">
           <Text size="lg" fw={700}>What Digital Task</Text>
           {user && (
             <Box>
@@ -18,6 +18,6 @@ export function Header() {
           )}
         </Group>
       </Container>
-    </AppShell.Header>
+    </Box>
   );
 } 

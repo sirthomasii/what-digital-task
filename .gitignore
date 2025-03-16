@@ -40,3 +40,4 @@ data/
 /data.tar.gz
 .divio/
 /static/
+backend/logs/django.log

@@ -3,7 +3,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import '@mantine/core/styles.css';
-import { MantineProvider, createTheme, AppShell } from '@mantine/core';
+import { MantineProvider, createTheme, Box } from '@mantine/core';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { UserProvider } from '@/contexts/UserContext';
 import { Header } from '@/components/Header';
@@ -29,19 +29,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
+      <body style={{ overflow: 'hidden' }}>
         <MantineProvider theme={theme}>
           <AuthProvider>
             <UserProvider>
-              <AppShell
-                header={{ height: 60 }}
-                padding="md"
-              >
+              <Box mt="lg" style={{ height: '100vh'}}>
                 <Header />
-                <AppShell.Main>
+                <Box component="main" mt="sm">
                   {children}
-                </AppShell.Main>
-              </AppShell>
+                </Box>
+              </Box>
             </UserProvider>
           </AuthProvider>
         </MantineProvider>

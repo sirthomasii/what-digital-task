@@ -398,6 +398,7 @@ export function ProductTable() {
           </Group>
         </Paper>
         <Paper 
+          shadow="xl"
           style={{ 
             flex: 1,
             overflow: 'auto',
