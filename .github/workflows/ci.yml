@@ -52,7 +52,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
+  deploy-test:
     needs: build
     if: github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
@@ -74,7 +74,34 @@ jobs:
           divio login ${{ secrets.DIVIO_TOKEN }}
 
       # Use the root Dockerfile for Divio deployment
-      - name: Deploy to Divio
+      - name: Deploy to Divio Test Environment
         run: |
           echo "Deploying to Divio test environment..."
           divio project deploy test --remote-id ${{ secrets.DIVIO_APP_UUID }}
+
+  deploy-live:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Divio CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install divio-cli
+
+      - name: Configure Divio CLI
+        run: |
+          divio login ${{ secrets.DIVIO_TOKEN }}
+
+      # Use the root Dockerfile for Divio deployment
+      - name: Deploy to Divio Live Environment
+        run: |
+          echo "Deploying to Divio live environment..."
+          divio project deploy live --remote-id ${{ secrets.DIVIO_APP_UUID }}
