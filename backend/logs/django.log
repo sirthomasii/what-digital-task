@@ -1972,3 +1972,7 @@ DEBUG 2025-03-15 21:13:49,815 autoreload 15 281473775943712 File /usr/local/lib/
 DEBUG 2025-03-15 21:14:22,723 autoreload 15 281473775943712 File /app/core/logging_settings.py previous mtime: 1742073228.1340606, current mtime: 1742073262.5736141
 DEBUG 2025-03-15 21:14:22,724 autoreload 15 281473775943712 /app/core/logging_settings.py notified as changed. Signal results: [(<function template_changed at 0xffffb6451940>, None), (<function translation_file_changed at 0xffffb5cc4fe0>, None)].
 INFO 2025-03-15 21:14:22,725 autoreload 15 281473775943712 /app/core/logging_settings.py changed, reloading.
+[WARNING] Unauthorized: /api/products/
+[WARNING] "GET /api/products/ HTTP/1.1" 401 172
+[WARNING] Unauthorized: /api/products/
+[WARNING] "GET /api/products/ HTTP/1.1" 401 172

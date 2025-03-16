@@ -380,8 +380,8 @@ export function ProductTable() {
   );
 
   return (
-    <Container size="md" p="md" h="100vh">
-      <Stack h="100%" gap={0}>
+    <Container size="md" h="100%" p={0}>
+      <Stack h="100%" gap="md">
         <Paper p="md" withBorder>
           <Group justify="space-between" align="center">
             <TextInput
@@ -391,12 +391,7 @@ export function ProductTable() {
               style={{ flex: 1 }}
             />
             <Group gap="md">
-              {user && (
-                <Text size="sm" c="dimmed">
-                  {user.email}
-                </Text>
-              )}
-              <Button onClick={handleLogout} color="red" variant="light">
+              <Button onClick={handleLogout} color="red" size="sm">
                 Logout
               </Button>
             </Group>
@@ -406,7 +401,8 @@ export function ProductTable() {
           style={{ 
             flex: 1,
             overflow: 'auto',
-            borderRadius: 0
+            borderRadius: 0,
+            margin: 0
           }}
         >
           <Table stickyHeader horizontalSpacing="md" verticalSpacing="sm" layout="fixed" style={{ tableLayout: 'fixed', width: '100%' }}>
