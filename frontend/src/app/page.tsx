@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <Box 
       w="100%" 
-      h="95vh" 
+      h="93vh" 
       bg="#f8f9fa"
       style={{ 
         display: 'flex',
