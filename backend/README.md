@@ -47,7 +47,6 @@ This is the backend service for the What Digital Task project, built with Django
 
 - Code formatting is handled by Black
 - Code linting is handled by Flake8
-- Type checking is handled by MyPy
 
 To run the formatters and linters:
 ```bash
