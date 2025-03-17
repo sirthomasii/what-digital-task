@@ -6,9 +6,9 @@ export function Header() {
 
   return (
     <Box component="header" style={{ borderBottom: '1px solid rgb(201, 201, 201)' }}>
-      <Container size="xl" h="5vh" py="sm">
-        <Group justify="space-between" mt="-1.5vh">
-          <Text size="lg" fw={700}>What Digital Task</Text>
+      <Container size="xl" h="6vh">
+        <Group justify="space-between" h="100%" align="center">
+          <Text size="md" fw={1000}>What Digital Task</Text>
           {user && (
             <Box>
               <Text size="sm" c="dimmed">

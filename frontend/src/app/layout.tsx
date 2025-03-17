@@ -33,7 +33,7 @@ export default function RootLayout({
         <MantineProvider theme={theme}>
           <AuthProvider>
             <UserProvider>
-              <Box mt="lg" style={{ height: '100vh'}}>
+              <Box style={{ height: '100vh'}}>
                 <Header />
                 <Box component="main" mt="sm">
                   {children}
